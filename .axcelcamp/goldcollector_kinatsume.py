@@ -36,12 +36,37 @@ goldcollector_kinatsume.py （元ファイル: goldcollector.py）
 # Code by Alexander Pruss and under the MIT license
 #
 
+# 先生向け：親フォルダにある Minecraft 用ライブラリを読み込む準備。
+import sys
+from pathlib import Path
+import collections
+from collections.abc import Iterable
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+# 古い mcpi が使う名前を補い、Python 3.10 以降でも動くようにする。
+if not hasattr(collections, "Iterable"):
+    collections.Iterable = Iterable
+
 from mine import *
 from random import *
 from time import *
-import sys
 
 mc = Minecraft()
+
+
+def nihongo_chat(message):
+    """先生向け：日本語 Windows の RaspberryJamMod に合わせて送信する。"""
+    # この環境の MOD は UTF-8 ではなく CP932 でチャットを受け取る。
+    # 別の環境では、その MOD の受信文字コードに合わせる。
+    message = str(message).replace("\r", " ").replace("\n", " ")
+    command = f"chat.post({message})\n"
+    data = command.encode("cp932")
+    mc.conn.drain()
+    mc.conn.lastSent = command
+    mc.conn.socket.sendall(data)
+
+
 pos = mc.player.getTilePos()
 
 nokori_block_kazu = 0
@@ -56,7 +81,7 @@ mokuhyou = 10
 # はんいのマスのかずより mokuhyou がおおきいと、ブロックをおききれない
 masu_no_kazu = (hani_x * 2 + 1) * (hani_z * 2 + 1)
 if mokuhyou > masu_no_kazu:
-    mc.postToChat("エラーだよ!はんいのおおきさと ブロックのかずを 考えてみよう!")
+    nihongo_chat("エラーだよ!はんいのおおきさと ブロックのかずを 考えてみよう!")
     sys.exit()
 
 while nokori_block_kazu < mokuhyou:
@@ -75,4 +100,4 @@ while nokori_block_kazu > 0:
         nokori_block_kazu = nokori_block_kazu - 1
     sleep(0.01)
 
-mc.postToChat(f"{mokuhyou} 個あつめるのに {round(time()-startTime, 1)} 秒かかったよ!")
+nihongo_chat(f"{mokuhyou} 個あつめるのに {round(time()-startTime, 1)} 秒かかったよ!")
