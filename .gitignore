@@ -1,0 +1,11 @@
+# AIエージェント用の設定ファイル
+AGENTS.md
+CLAUDE.md
+
+# Python のキャッシュ
+__pycache__/
+*.pyc
+
+# macOS が自動で作るファイル
+.DS_Store
+._*
